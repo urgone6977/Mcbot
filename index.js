@@ -8,7 +8,7 @@ const path = require('path');
 const mc = require('minecraft-protocol');
 const serverHost = 'Notpdfile.aternos.me';
 const serverPort = 20102;
-const botUsername = '247_Monitor';
+const botUsername = '.';
 const reconnectInterval = 1 * 40 * 1000;
 
 let bot = null; // Initialize the bot as null
