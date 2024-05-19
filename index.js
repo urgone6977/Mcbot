@@ -6,13 +6,12 @@ const io = require('socket.io')(http);
 const path = require('path');
 
 const mc = require('minecraft-protocol');
-const serverHost = 'hatchetfish.aternos.host:20102';
+const serverHost = 'Notpdfile.aternos.me:20102';
 const serverPort = 20102;
 const botUsername = 'herobrine';
 const reconnectInterval = 1 * 40 * 1000;
 
 let bot = null; // Initialize the bot as null
-let playerOnline = false; // Initialize player online status as false
 
 app.use(express.static(path.join(__dirname, '')));
 
@@ -23,15 +22,11 @@ app.get('/', function(req, res) {
 io.on('connection', function(socket) {
   console.log('a user connected');
 
-  socket.on('check_player_status', function(status) {
-    playerOnline = status; // Update player online status
-  });
-
   socket.on('control_bot', function(command) {
     switch (command) {
       case 'start':
-        if (!playerOnline && !bot) {
-          bot = createBot(); // Start the bot only if player is offline and bot is not running
+        if (!bot) {
+          bot = createBot(); // Start the bot only if it's not already running
         }
         break;
       case 'stop':
