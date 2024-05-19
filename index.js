@@ -5,17 +5,17 @@ const io = require('socket.io')(http);
 const path = require('path');
 const mc = require('minecraft-protocol');
 
-const serverHost = 'Notpdfile.aternos.me'; // Use hostname
-const serverPort = 20102;
+const serverHost = 'Notpdfile.aternos.me'; // Replace with your Aternos server address
+const serverPort = 20102; // Replace with your Aternos server port
 const botUsername = 'herobrine';
 const reconnectInterval = 40 * 1000; // Reconnect interval in milliseconds
 
 let bot = null; // Initialize the bot as null
 
-app.use(express.static(path.join(__dirname, '')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', function(req, res) {
-  res.sendFile(path.join(__dirname, 'main.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 io.on('connection', function(socket) {
@@ -54,13 +54,18 @@ io.on('connection', function(socket) {
 });
 
 function checkPlayersAndJoin() {
+  console.log(`Pinging server ${serverHost}:${serverPort}...`);
+
   mc.ping({ host: serverHost, port: serverPort }, (err, response) => {
     if (err) {
       console.error('Error pinging server:', err);
-      io.emit('bot_status', 'Error pinging server.');
+      io.emit('bot_status', 'Error pinging server: ' + err.message);
+      // Retry connecting after a short delay
+      setTimeout(checkPlayersAndJoin, reconnectInterval);
       return;
     }
 
+    console.log('Ping response:', response);
     const playersOnline = response.players.online;
     console.log(`Players online: ${playersOnline}`);
     io.emit('server_status', `Players online: ${playersOnline}`);
@@ -75,6 +80,8 @@ function checkPlayersAndJoin() {
 }
 
 function joinServer() {
+  console.log('Attempting to join server...');
+
   bot = mc.createClient({
     host: serverHost,
     port: serverPort,
@@ -102,10 +109,8 @@ function joinServer() {
     io.emit('bot_status', `Bot encountered an error: ${err.message}`);
     bot = null;
 
-    // Reconnect bot after the specified interval
-    setTimeout(() => {
-      checkPlayersAndJoin();
-    }, reconnectInterval);
+    // Retry connecting after a short delay
+    setTimeout(checkPlayersAndJoin, reconnectInterval);
   });
 }
 
