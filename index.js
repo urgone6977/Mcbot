@@ -6,7 +6,7 @@ const io = require('socket.io')(http);
 const path = require('path');
 
 const mc = require('minecraft-protocol');
-const serverHost = 'Notpdfile.aternos.me';
+const serverHost = 'hatchetfish.aternos.host:20102';
 const serverPort = 20102;
 const botUsername = 'herobrine';
 const reconnectInterval = 1 * 40 * 1000;
