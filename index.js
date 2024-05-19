@@ -74,9 +74,9 @@ function checkPlayersAndJoin() {
     console.log(`Players online: ${playersOnline}`);
     io.emit('server_status', `Players online: ${playersOnline}`);
 
-    if (playersOnline === 0) {
-      console.log('No players online, bot will not join.');
-      io.emit('bot_status', 'No players online, bot will not join.');
+    if (playersOnline > 0) {
+      console.log('Players online, bot will not join.');
+      io.emit('bot_status', 'Players online, bot will not join.');
     } else {
       joinServer();
     }
@@ -123,4 +123,3 @@ function joinServer() {
 http.listen(3000, function() {
   console.log('Server is running on port 3000');
 });
-
