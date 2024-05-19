@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Bot Control</title>
+</head>
+<body>
+  <h1>Minecraft Bot Control</h1>
+  <button onclick="startBot()">Start Bot</button>
+  <button onclick="stopBot()">Stop Bot</button>
+  <button onclick="reconnectBot()">Reconnect Bot</button>
+  <div id="status"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    function startBot() {
+      socket.emit('control_bot', 'start');
+    }
+
+    function stopBot() {
+      socket.emit('control_bot', 'stop');
+    }
+
+    function reconnectBot() {
+      socket.emit('control_bot', 'reconnect');
+    }
+
+    socket.on('bot_status', function(message) {
+      document.getElementById('status').innerText = message;
+    });
+  </script>
+</body>
+</html>
