@@ -1,15 +1,14 @@
-const port = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const path = require('path');
-
 const mc = require('minecraft-protocol');
-const serverHost = 'Notpdfile.aternos.me:20102';
+
+const serverHost = 'Notpdfile.aternos.me'; // Use hostname
 const serverPort = 20102;
 const botUsername = 'herobrine';
-const reconnectInterval = 1 * 40 * 1000;
+const reconnectInterval = 40 * 1000; // Reconnect interval in milliseconds
 
 let bot = null; // Initialize the bot as null
 
@@ -20,13 +19,13 @@ app.get('/', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-  console.log('a user connected');
+  console.log('A user connected');
 
   socket.on('control_bot', function(command) {
     switch (command) {
       case 'start':
         if (!bot) {
-          bot = createBot(); // Start the bot only if it's not already running
+          checkPlayersAndJoin();
         }
         break;
       case 'stop':
@@ -44,7 +43,7 @@ io.on('connection', function(socket) {
         console.log('Reconnecting bot...');
         io.emit('bot_status', 'Reconnecting bot...');
         setTimeout(() => {
-          bot = createBot(); // Reconnect the bot after a short delay
+          checkPlayersAndJoin(); // Reconnect the bot after a short delay
         }, 1000);
         break;
       default:
@@ -58,43 +57,13 @@ http.listen(3000, function() {
   console.log('Example app listening on port 3000!');
 });
 
-function createBot() {
-  const bot = mc.createClient({
-    host: serverHost,
-    port: serverPort,
-    username: botUsername,
-  });
-
-  bot.on('login', () => {
-    console.log(`Bot ${bot.username} logged in!`);
-    io.emit('bot_status', `Bot ${bot.username} logged in!`);
-  });
-
-  bot.on('end', () => {
-    console.log(`Bot ${bot.username} disconnected from the server. Reconnecting in ${reconnectInterval / 1000} seconds.`);
-    io.emit('bot_status', `Bot ${bot.username} disconnected from the server. Reconnecting in ${reconnectInterval / 1000} seconds.`);
-    handleDisconnection();
-  });
-
-  bot.on('error', (err) => {
-    console.error(`Bot ${bot.username} encountered an error:`, err);
-    handleDisconnection();
-  });
-
-  setInterval(() => {
-    if (bot) {
-      bot.write('keep_alive', { keepAliveId: 4337 });
+function checkPlayersAndJoin() {
+  mc.ping({ host: serverHost, port: serverPort }, (err, response) => {
+    if (err) {
+      console.error('Error pinging server:', err);
+      io.emit('bot_status', 'Error pinging server.');
+      return;
     }
-  }, 10000);
 
-  return bot;
-}
-
-function handleDisconnection() {
-  bot = null; // Reset bot to null since it's no longer connected
-  setTimeout(() => {
-    if (!bot) {
-      bot = createBot(); // Reconnect the bot after a short delay
-    }
-  }, reconnectInterval);
-}
+    const playersOnline = response.players.online;
+   
