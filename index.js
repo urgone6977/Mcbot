@@ -74,11 +74,11 @@ function checkPlayersAndJoin() {
     console.log(`Players online: ${playersOnline}`);
     io.emit('server_status', `Players online: ${playersOnline}`);
 
-    if (playersOnline > 0) {
-      joinServer();
-    } else {
+    if (playersOnline === 0) {
       console.log('No players online, bot will not join.');
       io.emit('bot_status', 'No players online, bot will not join.');
+    } else {
+      joinServer();
     }
   });
 }
