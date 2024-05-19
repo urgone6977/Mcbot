@@ -53,10 +53,6 @@ io.on('connection', function(socket) {
   });
 });
 
-http.listen(3000, function() {
-  console.log('Example app listening on port 3000!');
-});
-
 function checkPlayersAndJoin() {
   mc.ping({ host: serverHost, port: serverPort }, (err, response) => {
     if (err) {
@@ -66,4 +62,53 @@ function checkPlayersAndJoin() {
     }
 
     const playersOnline = response.players.online;
-   
+    console.log(`Players online: ${playersOnline}`);
+    io.emit('server_status', `Players online: ${playersOnline}`);
+
+    if (playersOnline > 0) {
+      joinServer();
+    } else {
+      console.log('No players online, bot will not join.');
+      io.emit('bot_status', 'No players online, bot will not join.');
+    }
+  });
+}
+
+function joinServer() {
+  bot = mc.createClient({
+    host: serverHost,
+    port: serverPort,
+    username: botUsername,
+  });
+
+  bot.on('login', () => {
+    console.log(`Bot ${botUsername} has logged in`);
+    io.emit('bot_status', `Bot ${botUsername} has logged in`);
+  });
+
+  bot.on('end', () => {
+    console.log('Bot disconnected from the server');
+    io.emit('bot_status', 'Bot disconnected from the server');
+    bot = null;
+
+    // Reconnect bot after the specified interval
+    setTimeout(() => {
+      checkPlayersAndJoin();
+    }, reconnectInterval);
+  });
+
+  bot.on('error', (err) => {
+    console.error('Bot encountered an error:', err);
+    io.emit('bot_status', `Bot encountered an error: ${err.message}`);
+    bot = null;
+
+    // Reconnect bot after the specified interval
+    setTimeout(() => {
+      checkPlayersAndJoin();
+    }, reconnectInterval);
+  });
+}
+
+http.listen(3000, function() {
+  console.log('Example app listening on port 3000!');
+});
