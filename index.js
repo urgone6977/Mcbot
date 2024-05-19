@@ -12,12 +12,15 @@ const reconnectInterval = 40 * 1000; // Reconnect interval in milliseconds
 
 let bot = null; // Initialize the bot as null
 
+// Set the directory to serve static files from
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve the index.html file when accessing the root URL
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// WebSocket connection handler
 io.on('connection', function(socket) {
   console.log('A user connected');
 
@@ -53,6 +56,7 @@ io.on('connection', function(socket) {
   });
 });
 
+// Function to check players and join the server
 function checkPlayersAndJoin() {
   console.log(`Pinging server ${serverHost}:${serverPort}...`);
 
@@ -79,6 +83,7 @@ function checkPlayersAndJoin() {
   });
 }
 
+// Function to join the server
 function joinServer() {
   console.log('Attempting to join server...');
 
@@ -114,6 +119,8 @@ function joinServer() {
   });
 }
 
+// Start the HTTP server listening on port 3000
 http.listen(3000, function() {
-  console.log('Example app listening on port 3000!');
+  console.log('Server is running on port 3000');
 });
+
